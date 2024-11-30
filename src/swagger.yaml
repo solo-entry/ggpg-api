@@ -1,0 +1,1548 @@
+openapi: 3.0.0
+info:
+  title: Academic Connect API
+  version: 1.0.0
+  description: >
+    Academic Connect is a platform where students can showcase their graduation projects, interact with peers, and connect with industry professionals. This API allows for user authentication, project management, commenting, liking, bookmarking, messaging, and admin functionalities.
+
+servers:
+  - url: http://localhost:5000/api
+    description: Local development server
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    # User Schemas
+    User:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "60d0fe4f5311236168a109ca"
+        username:
+          type: string
+          example: "john_doe"
+        email:
+          type: string
+          example: "john@example.com"
+        role:
+          type: string
+          enum: [student, professional, admin]
+          example: "student"
+        profile:
+          type: object
+          properties:
+            bio:
+              type: string
+              example: "Computer Science student with a passion for AI."
+            skills:
+              type: array
+              items:
+                type: string
+              example: ["JavaScript", "React", "Node.js"]
+            socialLinks:
+              type: object
+              additionalProperties:
+                type: string
+              example: { "linkedin": "https://linkedin.com/in/johndoe" }
+        createdAt:
+          type: string
+          format: date-time
+          example: "2023-01-01T00:00:00.000Z"
+
+    UserLogin:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          example: "john@example.com"
+        password:
+          type: string
+          example: "password123"
+
+    UserRegister:
+      type: object
+      required:
+        - username
+        - email
+        - password
+      properties:
+        username:
+          type: string
+          example: "john_doe"
+        email:
+          type: string
+          example: "john@example.com"
+        password:
+          type: string
+          example: "password123"
+        role:
+          type: string
+          enum: [student, professional]
+          example: "student"
+
+    UserProfileUpdate:
+      type: object
+      properties:
+        username:
+          type: string
+          example: "john_doe_updated"
+        email:
+          type: string
+          example: "john_new@example.com"
+        password:
+          type: string
+          example: "newpassword123"
+        bio:
+          type: string
+          example: "Updated bio."
+        skills:
+          type: array
+          items:
+            type: string
+          example: ["Python", "Django"]
+        socialLinks:
+          type: object
+          additionalProperties:
+            type: string
+          example: { "github": "https://github.com/johndoe" }
+
+    # Project Schemas
+    Project:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "60d0fe4f5311236168a109cb"
+        title:
+          type: string
+          example: "AI-Powered Chatbot"
+        description:
+          type: string
+          example: "A chatbot that leverages AI to provide intelligent responses."
+        media:
+          type: array
+          items:
+            type: string
+            example: "https://example.com/media/chatbot.png"
+        tags:
+          type: array
+          items:
+            type: string
+          example: ["AI", "Chatbot", "Machine Learning"]
+        author:
+          $ref: '#/components/schemas/User'
+        likes:
+          type: array
+          items:
+            type: string
+            example: "60d0fe4f5311236168a109ca"
+        bookmarks:
+          type: array
+          items:
+            type: string
+            example: "60d0fe4f5311236168a109ca"
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Comment'
+        category:
+          $ref: '#/components/schemas/Category'
+        isFeatured:
+          type: boolean
+          example: false
+        visibility:
+          type: string
+          enum: [public, private]
+          example: "public"
+        viewCount:
+          type: integer
+          example: 150
+        createdAt:
+          type: string
+          format: date-time
+          example: "2023-01-01T00:00:00.000Z"
+
+    ProjectCreate:
+      type: object
+      required:
+        - title
+        - description
+      properties:
+        title:
+          type: string
+          example: "AI-Powered Chatbot"
+        description:
+          type: string
+          example: "A chatbot that leverages AI to provide intelligent responses."
+        media:
+          type: array
+          items:
+            type: string
+            example: "https://example.com/media/chatbot.png"
+        category:
+          type: string
+          example: "60d0fe4f5311236168a109cc"
+
+    ProjectUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          example: "AI-Powered Chatbot v2"
+        description:
+          type: string
+          example: "An improved chatbot with enhanced AI capabilities."
+        media:
+          type: array
+          items:
+            type: string
+            example: "https://example.com/media/chatbot_v2.png"
+        category:
+          type: string
+          example: "60d0fe4f5311236168a109cc"
+        visibility:
+          type: string
+          enum: [public, private]
+          example: "private"
+
+    # Comment Schemas
+    Comment:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "60d0fe4f5311236168a109cd"
+        content:
+          type: string
+          example: "Great project!"
+        author:
+          $ref: '#/components/schemas/User'
+        project:
+          type: string
+          example: "60d0fe4f5311236168a109cb"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2023-01-02T00:00:00.000Z"
+
+    CommentCreate:
+      type: object
+      required:
+        - content
+      properties:
+        content:
+          type: string
+          example: "Great project!"
+
+    CommentUpdate:
+      type: object
+      properties:
+        content:
+          type: string
+          example: "Updated comment content."
+
+    # Like Schemas
+    Like:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "60d0fe4f5311236168a109ce"
+        user:
+          type: string
+          example: "60d0fe4f5311236168a109ca"
+        project:
+          type: string
+          example: "60d0fe4f5311236168a109cb"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2023-01-03T00:00:00.000Z"
+
+    # Bookmark Schemas
+    Bookmark:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "60d0fe4f5311236168a109cf"
+        user:
+          type: string
+          example: "60d0fe4f5311236168a109ca"
+        project:
+          type: string
+          example: "60d0fe4f5311236168a109cb"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2023-01-04T00:00:00.000Z"
+
+    # Message Schemas
+    Message:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "60d0fe4f5311236168a109d0"
+        sender:
+          type: string
+          example: "60d0fe4f5311236168a109ca"
+        receiver:
+          type: string
+          example: "60d0fe4f5311236168a109cb"
+        content:
+          type: string
+          example: "Hello! Interested in your project."
+        read:
+          type: boolean
+          example: false
+        createdAt:
+          type: string
+          format: date-time
+          example: "2023-01-05T00:00:00.000Z"
+
+    MessageCreate:
+      type: object
+      required:
+        - content
+      properties:
+        content:
+          type: string
+          example: "Hello! Interested in your project."
+
+    # Category Schemas
+    Category:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "60d0fe4f5311236168a109cc"
+        name:
+          type: string
+          example: "Artificial Intelligence"
+        description:
+          type: string
+          example: "Projects related to AI and machine learning."
+
+    CategoryCreate:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          example: "Data Science"
+        description:
+          type: string
+          example: "Projects focused on data analysis and visualization."
+
+    CategoryUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Advanced Data Science"
+        description:
+          type: string
+          example: "Updated description for data science projects."
+
+  responses:
+    UnauthorizedError:
+      description: Access token is missing or invalid
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Not authorized, token failed"
+    NotFoundError:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Project not found"
+    BadRequestError:
+      description: Bad request due to invalid input
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: "Please enter all fields"
+
+paths:
+  # Auth Routes
+  /auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register a new user
+      description: Register a new user with username, email, and password.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegister'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                  username:
+                    type: string
+                  email:
+                    type: string
+                  role:
+                    type: string
+                  token:
+                    type: string
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: User login
+      description: Authenticate user and return a JWT token.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLogin'
+      responses:
+        '200':
+          description: User authenticated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                  username:
+                    type: string
+                  email:
+                    type: string
+                  role:
+                    type: string
+                  token:
+                    type: string
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Invalid credentials"
+
+  /auth/profile:
+    get:
+      tags:
+        - Authentication
+      summary: Get user profile
+      description: Retrieve the authenticated user's profile.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    put:
+      tags:
+        - Authentication
+      summary: Update user profile
+      description: Update the authenticated user's profile information.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserProfileUpdate'
+      responses:
+        '200':
+          description: User profile updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                  username:
+                    type: string
+                  email:
+                    type: string
+                  role:
+                    type: string
+                  profile:
+                    type: object
+                  token:
+                    type: string
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+
+  # Project Routes
+  /projects:
+    get:
+      tags:
+        - Projects
+      summary: Get all public projects
+      description: Retrieve a list of all public projects with optional filtering and sorting.
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Search term for project title, description, or tags.
+        - in: query
+          name: category
+          schema:
+            type: string
+          description: Filter projects by category ID.
+        - in: query
+          name: tags
+          schema:
+            type: string
+          description: Comma-separated list of tags to filter projects.
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+            enum: [date, likes, popularity]
+          description: Sort projects by date, likes, or popularity.
+      responses:
+        '200':
+          description: A list of projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Project'
+        '500':
+          description: Server error
+
+    post:
+      tags:
+        - Projects
+      summary: Create a new project
+      description: Create a new project. Authentication required.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectCreate'
+      responses:
+        '201':
+          description: Project created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /projects/{id}:
+    get:
+      tags:
+        - Projects
+      summary: Get a single project
+      description: Retrieve details of a specific project by ID.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The project ID
+      responses:
+        '200':
+          description: Project details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          description: Server error
+
+    put:
+      tags:
+        - Projects
+      summary: Update a project
+      description: Update an existing project. Authentication required.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The project ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectUpdate'
+      responses:
+        '200':
+          description: Project updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          description: Server error
+
+    delete:
+      tags:
+        - Projects
+      summary: Delete a project
+      description: Delete a specific project by ID. Authentication required.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The project ID
+      responses:
+        '200':
+          description: Project deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Project removed"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          description: Server error
+
+  # Comment Routes
+  /comments/{projectId}:
+    get:
+      tags:
+        - Comments
+      summary: Get comments for a project
+      description: Retrieve all comments associated with a specific project.
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: string
+          description: The project ID
+      responses:
+        '200':
+          description: A list of comments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Comment'
+        '500':
+          description: Server error
+
+    post:
+      tags:
+        - Comments
+      summary: Add a comment to a project
+      description: Add a new comment to a specific project. Authentication required.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: string
+          description: The project ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentCreate'
+      responses:
+        '201':
+          description: Comment added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          description: Server error
+
+  /comments/{id}:
+    put:
+      tags:
+        - Comments
+      summary: Edit a comment
+      description: Update an existing comment. Authentication required.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The comment ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentUpdate'
+      responses:
+        '200':
+          description: Comment updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          description: Server error
+
+    delete:
+      tags:
+        - Comments
+      summary: Delete a comment
+      description: Delete a specific comment by ID. Authentication required.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The comment ID
+      responses:
+        '200':
+          description: Comment deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Comment removed"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          description: Server error
+
+  # Like Routes
+  /likes/{projectId}:
+    get:
+      tags:
+        - Likes
+      summary: Get like count for a project
+      description: Retrieve the number of likes for a specific project.
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: string
+          description: The project ID
+      responses:
+        '200':
+          description: Like count retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  likeCount:
+                    type: integer
+                    example: 25
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          description: Server error
+
+    post:
+      tags:
+        - Likes
+      summary: Like a project
+      description: Like a specific project. Authentication required.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: string
+          description: The project ID
+      responses:
+        '201':
+          description: Project liked successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Project liked"
+        '400':
+          description: Project already liked
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Project already liked"
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          description: Server error
+
+    delete:
+      tags:
+        - Likes
+      summary: Unlike a project
+      description: Remove a like from a specific project. Authentication required.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: string
+          description: The project ID
+      responses:
+        '200':
+          description: Project unliked successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Project unliked"
+        '400':
+          description: Project not liked yet
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Project not liked yet"
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          description: Server error
+
+  # Bookmark Routes
+  /bookmarks:
+    get:
+      tags:
+        - Bookmarks
+      summary: Get all bookmarks of a user
+      description: Retrieve all bookmarked projects for the authenticated user.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: A list of bookmarks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Bookmark'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          description: Server error
+
+  /bookmarks/{projectId}:
+    post:
+      tags:
+        - Bookmarks
+      summary: Bookmark a project
+      description: Bookmark a specific project. Authentication required.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: string
+          description: The project ID
+      responses:
+        '201':
+          description: Project bookmarked successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Project bookmarked"
+        '400':
+          description: Project already bookmarked
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Project already bookmarked"
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          description: Server error
+
+    delete:
+      tags:
+        - Bookmarks
+      summary: Remove bookmark from a project
+      description: Remove a bookmark from a specific project. Authentication required.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: projectId
+          required: true
+          schema:
+            type: string
+          description: The project ID
+      responses:
+        '200':
+          description: Project unbookmarked successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Project unbookmarked"
+        '400':
+          description: Project not bookmarked yet
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Project not bookmarked yet"
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          description: Server error
+
+  # Message Routes
+  /messages/{receiverId}:
+    post:
+      tags:
+        - Messages
+      summary: Send a message to another user
+      description: Send a message to a specific user. Authentication required.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: receiverId
+          required: true
+          schema:
+            type: string
+          description: The receiver user's ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MessageCreate'
+      responses:
+        '201':
+          description: Message sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          description: Server error
+
+  /messages/{userId}:
+    get:
+      tags:
+        - Messages
+      summary: Get all messages between users
+      description: Retrieve all messages exchanged between the authenticated user and another user.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+          description: The other user's ID
+      responses:
+        '200':
+          description: A list of messages
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Message'
+        '500':
+          description: Server error
+
+  /messages/read/{messageId}:
+    put:
+      tags:
+        - Messages
+      summary: Mark a message as read
+      description: Mark a specific message as read. Authentication required.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: messageId
+          required: true
+          schema:
+            type: string
+          description: The message ID
+      responses:
+        '200':
+          description: Message marked as read
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Message marked as read"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          description: Server error
+
+  # Admin Routes
+  /admin/comments/{id}:
+    delete:
+      tags:
+        - Admin
+      summary: Delete a comment
+      description: Admin can delete any comment by ID. Authentication and admin role required.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The comment ID
+      responses:
+        '200':
+          description: Comment deleted successfully by admin
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Comment removed by admin"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          description: Admin access required
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Admin access required"
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          description: Server error
+
+  /admin/projects/feature/{id}:
+    put:
+      tags:
+        - Admin
+      summary: Feature a project
+      description: Admin can feature a project by ID. Authentication and admin role required.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The project ID
+      responses:
+        '200':
+          description: Project featured successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Project featured"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          description: Admin access required
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Admin access required"
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          description: Server error
+
+  /admin/projects/unfeature/{id}:
+    put:
+      tags:
+        - Admin
+      summary: Unfeature a project
+      description: Admin can unfeature a project by ID. Authentication and admin role required.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The project ID
+      responses:
+        '200':
+          description: Project unfeatured successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Project unfeatured"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          description: Admin access required
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Admin access required"
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          description: Server error
+
+  /admin/categories:
+    post:
+      tags:
+        - Admin
+      summary: Add a new category
+      description: Admin can add a new project category. Authentication and admin role required.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryCreate'
+      responses:
+        '201':
+          description: Category created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          description: Admin access required
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Admin access required"
+        '500':
+          description: Server error
+
+  /admin/categories/{id}:
+    put:
+      tags:
+        - Admin
+      summary: Edit a category
+      description: Admin can edit an existing category by ID. Authentication and admin role required.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The category ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryUpdate'
+      responses:
+        '200':
+          description: Category updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          description: Admin access required
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Admin access required"
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          description: Server error
+
+    delete:
+      tags:
+        - Admin
+      summary: Delete a category
+      description: Admin can delete a category by ID. Authentication and admin role required.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The category ID
+      responses:
+        '200':
+          description: Category deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Category removed"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          description: Admin access required
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Admin access required"
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          description: Server error
+
+  /admin/users:
+    get:
+      tags:
+        - Admin
+      summary: Get all users
+      description: Admin can retrieve a list of all users. Authentication and admin role required.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: A list of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          description: Admin access required
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Admin access required"
+        '500':
+          description: Server error
+
+  /admin/users/{id}:
+    delete:
+      tags:
+        - Admin
+      summary: Delete a user
+      description: Admin can delete a user by ID. Authentication and admin role required.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The user ID
+      responses:
+        '200':
+          description: User deleted successfully by admin
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User removed by admin"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          description: Admin access required
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Admin access required"
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          description: Server error
+
+  /admin/reports:
+    get:
+      tags:
+        - Admin
+      summary: Get all reports
+      description: Retrieve all user-generated reports. (Not implemented)
+      security:
+        - bearerAuth: []
+      responses:
+        '501':
+          description: Not implemented
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Not implemented"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          description: Admin access required
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Admin access required"
+        '500':
+          description: Server error
+
+  /admin/categories:
+    post:
+      tags:
+        - Admin
+      summary: Add a new category
+      description: Admin can add a new project category. Authentication and admin role required.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryCreate'
+      responses:
+        '201':
+          description: Category created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '403':
+          description: Admin access required
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Admin access required"
+        '500':
+          description: Server error
+
+  # Admin Categories Editing and Deleting already covered above
+
+  # Admin Project Feature/Unfeature already covered
+
+  # Admin User Management already covered
+
+  # Message Routes already covered
+
+  # Bookmark Routes already covered
+
+  # Like Routes already covered
+
+  # Comment Routes already covered
+
+  # Project Routes already covered
+
+  # Auth Routes already covered
+
+  # Messages and Bookmarks routes also covered
+
+  # Now define Admin routes as per earlier
+
+  # Define more Admin operations if needed
+
+  # You can continue adding paths as needed
+
+  # Note: The above includes most of the endpoints provided
+
+  # It’s possible to continue expanding as needed
+
+  # General /admin/reports not implemented as per the controller
+
