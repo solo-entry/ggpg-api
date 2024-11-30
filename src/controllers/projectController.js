@@ -55,7 +55,7 @@ const getProjects = async (req, res) => {
     }
 
     const projects = await Project.find(query)
-      .populate('author', 'username email')
+      .populate('author', 'fullName email')
       .populate('category', 'name')
       .sort(sort)
       .exec();
@@ -69,11 +69,11 @@ const getProjects = async (req, res) => {
 const getProjectById = async (req, res) => {
   try {
     const project = await Project.findById(req.params.id)
-      .populate('author', 'username email')
+      .populate('author', 'fullName email')
       .populate('category', 'name')
       .populate({
         path: 'comments',
-        populate: { path: 'author', select: 'username' },
+        populate: { path: 'author', select: 'fullName' },
       })
       .exec();
 

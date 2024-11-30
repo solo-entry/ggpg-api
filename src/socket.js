@@ -20,13 +20,13 @@ const setupSocket = (io) => {
       next(new Error('Authentication error'));
     }
   }).on('connection', (socket) => {
-    console.log(`User connected: ${socket.user.username}`);
+    console.log(`User connected: ${socket.user.fullName}`);
 
     // Join room based on user ID for personalized notifications
     socket.join(socket.user._id.toString());
 
     socket.on('disconnect', () => {
-      console.log(`User disconnected: ${socket.user.username}`);
+      console.log(`User disconnected: ${socket.user.fullName}`);
     });
   });
 };

@@ -42,7 +42,7 @@ const addComment = async (req, res) => {
 const getComments = async (req, res) => {
   try {
     const comments = await Comment.find({ project: req.params.projectId })
-      .populate('author', 'username')
+      .populate('author', 'fullName')
       .sort({ createdAt: -1 })
       .exec();
     res.json(comments);

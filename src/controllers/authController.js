@@ -7,9 +7,9 @@ const generateToken = (id) => {
 };
 
 const registerUser = async (req, res) => {
-  const { username, email, password, role } = req.body;
+  const { fullName, email, password, role } = req.body;
 
-  if (!username || !email || !password) {
+  if (!fullName || !email || !password) {
     return res.status(400).json({ message: 'Please enter all fields' });
   }
 
@@ -20,7 +20,7 @@ const registerUser = async (req, res) => {
   }
 
   const user = await User.create({
-    username,
+    fullName,
     email,
     passwordHash: password,
     role: role || 'student',
@@ -29,7 +29,7 @@ const registerUser = async (req, res) => {
   if (user) {
     res.status(201).json({
       _id: user._id,
-      username: user.username,
+      fullName: user.fullName,
       email: user.email,
       role: user.role,
       token: generateToken(user._id),
@@ -50,7 +50,7 @@ const authUser = async (req, res) => {
   if (user && (await user.matchPassword(password))) {
     res.json({
       _id: user._id,
-      username: user.username,
+      fullName: user.fullName,
       email: user.email,
       role: user.role,
       token: generateToken(user._id),
@@ -80,7 +80,7 @@ const updateUserProfile = async (req, res) => {
   const user = await User.findById(req.user._id);
 
   if (user) {
-    user.username = req.body.username || user.username;
+    user.fullName = req.body.fullName || user.fullName;
     user.email = req.body.email || user.email;
     if (req.body.password) {
       user.passwordHash = req.body.password;
@@ -93,7 +93,7 @@ const updateUserProfile = async (req, res) => {
 
     res.json({
       _id: updatedUser._id,
-      username: updatedUser.username,
+      fullName: updatedUser.fullName,
       email: updatedUser.email,
       role: updatedUser.role,
       profile: updatedUser.profile,
