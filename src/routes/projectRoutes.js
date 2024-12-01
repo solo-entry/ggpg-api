@@ -5,11 +5,13 @@ const {
   getProjects,
   getProjectById,
   updateProject,
-  deleteProject, generateTags,
+  deleteProject, generateTags, getFeaturedProjects, getAuthors,
 } = require('../controllers/projectController');
 const { protect } = require('../middleware/authMiddleware');
 
 // Public Routes
+router.get('/featured', getFeaturedProjects);
+router.get('/authors', getAuthors);
 router.get('/', getProjects);
 router.get('/:id', getProjectById);
 

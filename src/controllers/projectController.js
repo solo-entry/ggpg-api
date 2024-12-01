@@ -1,6 +1,5 @@
 const Project = require('../models/Project');
 const Like = require('../models/Like');
-const {generateTagsWithAI} = require('../utils/openai');
 const OpenAI = require("openai");
 
 const generateTags = async (req, res) => {
@@ -48,6 +47,65 @@ const createProject = async (req, res) => {
 
   const createdProject = await project.save();
   res.status(201).json(createdProject);
+}
+
+const getAuthors = async (req, res) => {
+
+  try {
+    const topAuthors = await Project.aggregate([
+      // Group projects by author and count the number of projects per author
+      {
+        $group: {
+          _id: '$author',
+          projectCount: { $sum: 1 },
+        }
+      },
+      // Sort authors by project count in descending order
+      {
+        $sort: { projectCount: -1 }
+      },
+      // Lookup author details from the users collection
+      {
+        $lookup: {
+          from: 'users', // MongoDB collection name for User model
+          localField: '_id',
+          foreignField: '_id',
+          as: 'authorDetails'
+        }
+      },
+      // Unwind the authorDetails array to object
+      {
+        $unwind: '$authorDetails'
+      },
+      // Project the desired fields in the response
+      {
+        $project: {
+          _id: 0,
+          authorId: '$_id',
+          username: '$authorDetails.username',
+          email: '$authorDetails.email',
+          role: '$authorDetails.role',
+          bio: '$authorDetails.profile.bio',
+          skills: '$authorDetails.profile.skills',
+          socialLinks: '$authorDetails.profile.socialLinks',
+          projectCount: 1
+        }
+      }
+    ]);
+
+    res.json(topAuthors);
+  } catch (error) {
+    console.error('Error fetching top authors:', error.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+}
+
+const getFeaturedProjects = async (req, res) => {
+  const projects = await Project.find({
+    isFeatured: true,
+  }).limit(5).exec();
+  console.log('projects', projects);
+  res.json(projects);
 }
 
 const getProjects = async (req, res) => {
@@ -133,7 +191,7 @@ const getProjectById = async (req, res) => {
 };
 
 const updateProject = async (req, res) => {
-  const {title, description, media, category, visibility} = req.body;
+  const {title, description, media, category, visibility, tags} = req.body;
 
   try {
     const project = await Project.findById(req.params.id);
@@ -148,11 +206,7 @@ const updateProject = async (req, res) => {
       project.media = media || project.media;
       project.category = category || project.category;
       project.visibility = visibility || project.visibility;
-
-      // Optionally regenerate tags if description changes
-      if (description) {
-        project.tags = await generateTagsWithAI(description);
-      }
+      project.tags = tags?.split(',').map(x => x.trim()) || project.tags;
 
       const updatedProject = await project.save();
       res.json(updatedProject);
@@ -193,4 +247,6 @@ module.exports = {
   updateProject,
   deleteProject,
   generateTags,
+  getFeaturedProjects,
+  getAuthors
 };
