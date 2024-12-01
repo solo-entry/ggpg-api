@@ -5,7 +5,7 @@ const User = require('./models/User');
 const setupSocket = (io) => {
   io.use(async (socket, next) => {
     try {
-      const token = socket.handshake.query.token;
+      const token = socket.handshake.headers.authorization;
       if (!token) {
         return next(new Error('Authentication error'));
       }
@@ -20,15 +20,18 @@ const setupSocket = (io) => {
       next(new Error('Authentication error'));
     }
   }).on('connection', (socket) => {
-    console.log(`User connected: ${socket.user.fullName}`);
+    // console.log(`User connected: ${socket.user.fullName}`);
 
     // Join room based on user ID for personalized notifications
     socket.join(socket.user._id.toString());
 
     socket.on('disconnect', () => {
-      console.log(`User disconnected: ${socket.user.fullName}`);
+      // console.log(`User disconnected: ${socket.user.fullName}`);
+    });
+    socket.on('comment', (projectId) => {
+      socket.join(`comment_${projectId}`);
     });
   });
 };
 
-module.exports = { setupSocket };
+module.exports = {setupSocket};

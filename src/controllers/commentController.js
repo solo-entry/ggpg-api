@@ -6,17 +6,17 @@ const Project = require('../models/Project');
 // @route   POST /api/comments/:projectId
 // @access  Private
 const addComment = async (req, res) => {
-  const { content } = req.body;
+  const {content} = req.body;
 
   if (!content) {
-    return res.status(400).json({ message: 'Comment content is required' });
+    return res.status(400).json({message: 'Comment content is required'});
   }
 
   try {
     const project = await Project.findById(req.params.projectId);
 
     if (!project) {
-      return res.status(404).json({ message: 'Project not found' });
+      return res.status(404).json({message: 'Project not found'});
     }
 
     const comment = new Comment({
@@ -31,8 +31,12 @@ const addComment = async (req, res) => {
     await project.save();
 
     res.status(201).json(savedComment);
+
+    const io = req.app.locals.io;
+    const preparedComment = await comment.populate('author', 'fullName email');
+    io.to(`comment_${project._id}`).emit('newComment', preparedComment.toJSON());
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({message: 'Server error'});
   }
 };
 
@@ -41,13 +45,13 @@ const addComment = async (req, res) => {
 // @access  Public
 const getComments = async (req, res) => {
   try {
-    const comments = await Comment.find({ project: req.params.projectId })
-      .populate('author', 'fullName')
-      .sort({ createdAt: -1 })
+    const comments = await Comment.find({project: req.params.projectId})
+      .populate('author', 'fullName email')
+      .sort({createdAt: -1})
       .exec();
     res.json(comments);
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({message: 'Server error'});
   }
 };
 
@@ -55,24 +59,24 @@ const getComments = async (req, res) => {
 // @route   PUT /api/comments/:id
 // @access  Private
 const editComment = async (req, res) => {
-  const { content } = req.body;
+  const {content} = req.body;
 
   try {
     const comment = await Comment.findById(req.params.id);
 
     if (comment) {
       if (comment.author.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
-        return res.status(401).json({ message: 'Not authorized to edit this comment' });
+        return res.status(401).json({message: 'Not authorized to edit this comment'});
       }
 
       comment.content = content || comment.content;
       const updatedComment = await comment.save();
       res.json(updatedComment);
     } else {
-      res.status(404).json({ message: 'Comment not found' });
+      res.status(404).json({message: 'Comment not found'});
     }
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({message: 'Server error'});
   }
 };
 
@@ -85,7 +89,7 @@ const deleteComment = async (req, res) => {
 
     if (comment) {
       if (comment.author.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
-        return res.status(401).json({ message: 'Not authorized to delete this comment' });
+        return res.status(401).json({message: 'Not authorized to delete this comment'});
       }
 
       await comment.deleteOne();
@@ -97,12 +101,12 @@ const deleteComment = async (req, res) => {
         await project.save();
       }
 
-      res.json({ message: 'Comment removed' });
+      res.json({message: 'Comment removed'});
     } else {
-      res.status(404).json({ message: 'Comment not found' });
+      res.status(404).json({message: 'Comment not found'});
     }
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({message: 'Server error'});
   }
 };
 
