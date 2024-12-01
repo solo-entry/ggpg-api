@@ -32,12 +32,12 @@ app.use(cors());
 app.use(express.json());
 // Routes Middleware
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-app.use('/api/auth', authRoutes);
-app.use('/api/projects', projectRoutes);
-app.use('/api/comments', commentRoutes);
-app.use('/api/likes', likeRoutes);
-app.use('/api/bookmarks', bookmarkRoutes);
-app.use('/api/admin', adminRoutes);
+app.use('/auth', authRoutes);
+app.use('/projects', projectRoutes);
+app.use('/comments', commentRoutes);
+app.use('/likes', likeRoutes);
+app.use('/bookmarks', bookmarkRoutes);
+app.use('/admin', adminRoutes);
 app.use(errorHandler);
 
 // Setup Socket.io
