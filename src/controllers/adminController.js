@@ -29,9 +29,13 @@ const getDashboard = async (req, res) => {
 const deleteComment = async (req, res) => {
   try {
     const comment = await Comment.findById(req.params.id);
+    const project = await Project.findById(comment.project);
 
     if (comment) {
       await comment.deleteOne();
+      project.comments = project.comments.filter(x => x.toString() !== req.params.id);
+      await project.save();
+
       res.json({message: 'Comment removed by admin'});
     } else {
       res.status(404).json({message: 'Comment not found'});
