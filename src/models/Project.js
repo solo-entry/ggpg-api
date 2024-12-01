@@ -9,6 +9,10 @@ const ProjectSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  driveFileId: {
+    type: String,
+    required: false,
+  },
   media: [
     {
       type: String, // URL or path to media file

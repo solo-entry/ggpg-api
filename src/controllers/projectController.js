@@ -32,7 +32,7 @@ const generateTags = async (req, res) => {
 }
 
 const createProject = async (req, res) => {
-  const {title, description, media, category, tags, author} = req.body;
+  const {title, description, media, category, tags, author, driveFileId} = req.body;
 
   if (!title || !description || !tags) return res.status(400).json({message: 'Title and description are required'});
 
@@ -43,6 +43,7 @@ const createProject = async (req, res) => {
     tags: tags.split(',').map(x => x.trim()),
     author: author,
     category: category || null,
+    driveFileId,
   });
 
   const createdProject = await project.save();
@@ -57,12 +58,12 @@ const getAuthors = async (req, res) => {
       {
         $group: {
           _id: '$author',
-          projectCount: { $sum: 1 },
+          projectCount: {$sum: 1},
         }
       },
       // Sort authors by project count in descending order
       {
-        $sort: { projectCount: -1 }
+        $sort: {projectCount: -1}
       },
       // Lookup author details from the users collection
       {
@@ -96,7 +97,7 @@ const getAuthors = async (req, res) => {
     res.json(topAuthors);
   } catch (error) {
     console.error('Error fetching top authors:', error.message);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({message: 'Server error'});
   }
 }
 
@@ -190,7 +191,7 @@ const getProjectById = async (req, res) => {
 };
 
 const updateProject = async (req, res) => {
-  const {title, description, media, category, visibility, tags, author} = req.body;
+  const {title, description, media, category, visibility, tags, author, driveFileId} = req.body;
 
   try {
     const project = await Project.findById(req.params.id);
@@ -203,6 +204,7 @@ const updateProject = async (req, res) => {
       project.visibility = visibility || project.visibility;
       project.tags = tags?.split(',').map(x => x.trim()) || project.tags;
       project.author = author || project.author;
+      project.driveFileId = driveFileId || project.driveFileId;
 
       const updatedProject = await project.save();
       res.json(updatedProject);
