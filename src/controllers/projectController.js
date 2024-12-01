@@ -1,4 +1,5 @@
 const Project = require('../models/Project');
+const Like = require('../models/Like');
 const {generateTagsWithAI} = require('../utils/openai');
 const OpenAI = require("openai");
 
@@ -84,8 +85,22 @@ const getProjects = async (req, res) => {
       .populate('category', 'name')
       .sort(sort)
       .exec();
-    console.log(projects);
 
+    if (req?.user?._id) {
+      const mappedProjects = [];
+      for (let project of projects) {
+        const liked = Like.exists({
+          project: project._id,
+          user: req.user._id,
+        });
+        mappedProjects.push({
+          ...project.toJSON(),
+          liked,
+        })
+      }
+
+      res.json(mappedProjects);
+    }
     res.json(projects);
   } catch (error) {
     res.status(500).json({message: 'Server error'});
