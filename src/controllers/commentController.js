@@ -88,7 +88,7 @@ const deleteComment = async (req, res) => {
         return res.status(401).json({ message: 'Not authorized to delete this comment' });
       }
 
-      await comment.remove();
+      await comment.deleteOne();
 
       // Remove comment from project
       const project = await Project.findById(comment.project);

@@ -12,15 +12,40 @@ const deleteComment = async (req, res) => {
     const comment = await Comment.findById(req.params.id);
 
     if (comment) {
-      await comment.remove();
-      res.json({ message: 'Comment removed by admin' });
+      await comment.deleteOne();
+      res.json({message: 'Comment removed by admin'});
     } else {
-      res.status(404).json({ message: 'Comment not found' });
+      res.status(404).json({message: 'Comment not found'});
     }
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({message: 'Server error'});
   }
 };
+const getAllComments = async (req, res) => {
+  try {
+    const {search} = req.query;
+
+    const filter = {};
+    if (search) {
+      const projects = await Project.find({title: new RegExp(search, 'i')}, '_id');
+      const projectIds = (projects || []).map((project) => project._id);
+      filter.project = {$in: projectIds};
+    }
+
+    const comments = await Comment.find(filter)
+      .populate('author', 'name email')
+      .populate('project', 'title description')
+      .sort({createdAt: -1}); // Sort by latest comments
+
+    res.json(comments);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({message: 'Server error'});
+  }
+};
+
+module.exports = {getAllComments};
+
 
 // @desc    Feature a project
 // @route   PUT /api/admin/projects/feature/:id
@@ -32,12 +57,12 @@ const featureProject = async (req, res) => {
     if (project) {
       project.isFeatured = true;
       await project.save();
-      res.json({ message: 'Project featured' });
+      res.json({message: 'Project featured'});
     } else {
-      res.status(404).json({ message: 'Project not found' });
+      res.status(404).json({message: 'Project not found'});
     }
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({message: 'Server error'});
   }
 };
 
@@ -51,12 +76,12 @@ const unfeatureProject = async (req, res) => {
     if (project) {
       project.isFeatured = false;
       await project.save();
-      res.json({ message: 'Project unfeatured' });
+      res.json({message: 'Project unfeatured'});
     } else {
-      res.status(404).json({ message: 'Project not found' });
+      res.status(404).json({message: 'Project not found'});
     }
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({message: 'Server error'});
   }
 };
 
@@ -64,28 +89,29 @@ const unfeatureProject = async (req, res) => {
 // @route   POST /api/admin/categories
 // @access  Private/Admin
 const addCategory = async (req, res) => {
-  const { name, description } = req.body;
+  const {name, description} = req.body;
 
   if (!name) {
-    return res.status(400).json({ message: 'Category name is required' });
+    return res.status(400).json({message: 'Category name is required'});
   }
 
   try {
-    const categoryExists = await Category.findOne({ name });
+    const categoryExists = await Category.findOne({name});
 
     if (categoryExists) {
-      return res.status(400).json({ message: 'Category already exists' });
+      return res.status(400).json({message: 'Category already exists'});
     }
 
-    const category = await Category.create({ name, description });
+    const category = await Category.create({name, description});
     res.status(201).json(category);
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({message: 'Server error'});
   }
 };
 
+
 const editCategory = async (req, res) => {
-  const { name, description } = req.body;
+  const {name, description} = req.body;
 
   try {
     const category = await Category.findById(req.params.id);
@@ -96,27 +122,51 @@ const editCategory = async (req, res) => {
       const updatedCategory = await category.save();
       res.json(updatedCategory);
     } else {
-      res.status(404).json({ message: 'Category not found' });
+      res.status(404).json({message: 'Category not found'});
     }
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({message: 'Server error'});
   }
 };
 
 const deleteCategory = async (req, res) => {
   try {
     const category = await Category.findById(req.params.id);
-
+    console.log(category)
     if (category) {
-      await category.remove();
-      res.json({ message: 'Category removed' });
+      await category.deleteOne();
+      res.json({message: 'Category removed'});
     } else {
-      res.status(404).json({ message: 'Category not found' });
+      res.status(404).json({message: 'Category not found'});
     }
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({message: 'Server error'});
   }
 };
+
+const getAllCategories = async (req, res) => {
+  try {
+    const categories = await Category.find(); // Fetches all categories from the database
+    res.status(200).json(categories); // Returns the categories in the response
+  } catch (error) {
+    res.status(500).json({message: 'Server error'}); // Sends a 500 error if something goes wrong
+  }
+};
+const getCategoryById = async (req, res) => {
+  try {
+    const {id} = req.params; // Lấy id từ params
+    const category = await Category.findById(id); // Tìm danh mục theo id
+
+    if (!category) {
+      return res.status(404).json({message: 'Category not found'}); // Nếu không tìm thấy, trả về lỗi 404
+    }
+
+    res.status(200).json(category); // Trả về danh mục nếu tìm thấy
+  } catch (error) {
+    res.status(500).json({message: 'Server error'}); // Xử lý lỗi server
+  }
+};
+
 
 // @desc    Get all users
 // @route   GET /api/admin/users
@@ -126,7 +176,7 @@ const getAllUsers = async (req, res) => {
     const users = await User.find().select('-passwordHash');
     res.json(users);
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({message: 'Server error'});
   }
 };
 
@@ -138,13 +188,13 @@ const deleteUser = async (req, res) => {
     const user = await User.findById(req.params.id);
 
     if (user) {
-      await user.remove();
-      res.json({ message: 'User removed by admin' });
+      await user.deleteOne();
+      res.json({message: 'User removed by admin'});
     } else {
-      res.status(404).json({ message: 'User not found' });
+      res.status(404).json({message: 'User not found'});
     }
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({message: 'Server error'});
   }
 };
 
@@ -153,14 +203,17 @@ const deleteUser = async (req, res) => {
 // @access  Private/Admin
 const getAllReports = async (req, res) => {
   // Implementation depends on how reports are handled
-  res.status(501).json({ message: 'Not implemented' });
+  res.status(501).json({message: 'Not implemented'});
 };
 
 module.exports = {
   deleteComment,
   featureProject,
   unfeatureProject,
+  getAllComments,
+  getAllCategories,
   addCategory,
+  getCategoryById,
   editCategory,
   deleteCategory,
   getAllUsers,
