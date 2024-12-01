@@ -4,6 +4,18 @@ const Project = require('../models/Project');
 const Comment = require('../models/Comment');
 const Category = require('../models/Category');
 
+const getDashboard = async (req, res) => {
+  const latestProjects = await Project.find({}).populate('author', 'fullName email').sort('-createdAt').limit(10).exec();
+  const latestComments = await Comment.find({}).populate('author', 'fullName email').sort('-createdAt').limit(5).exec();
+  const mostVotedProjects = await Project.find({}).populate('author', 'fullName email').sort({likes: -1}).limit(10).exec();
+
+  res.json({
+    latestProjects,
+    latestComments,
+    mostVotedProjects,
+  })
+}
+
 // @desc    Moderate content (delete inappropriate comments)
 // @route   DELETE /api/admin/comments/:id
 // @access  Private/Admin
@@ -219,4 +231,5 @@ module.exports = {
   getAllUsers,
   deleteUser,
   getAllReports,
+  getDashboard,
 };

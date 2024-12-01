@@ -82,7 +82,7 @@ const getAuthors = async (req, res) => {
         $project: {
           _id: 0,
           authorId: '$_id',
-          username: '$authorDetails.username',
+          fullName: '$authorDetails.fullName',
           email: '$authorDetails.email',
           role: '$authorDetails.role',
           bio: '$authorDetails.profile.bio',

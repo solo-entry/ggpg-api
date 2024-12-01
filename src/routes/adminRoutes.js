@@ -10,7 +10,7 @@ const {
   deleteCategory,
   getAllUsers,
   deleteUser,
-  getAllReports, getAllCategories, getCategoryById, getAllComments,
+  getAllReports, getAllCategories, getCategoryById, getAllComments, getDashboard,
 } = require('../controllers/adminController');
 const {protect} = require('../middleware/authMiddleware');
 const {admin} = require('../middleware/adminMiddleware');
@@ -18,6 +18,7 @@ const {admin} = require('../middleware/adminMiddleware');
 // Admin Routes
 router.delete('/comments/:id', protect, admin, deleteComment);
 router.get('/comments', protect, admin, getAllComments);
+router.get('/dashboard', protect, admin, getDashboard);
 router.put('/projects/feature/:id', protect, admin, featureProject);
 router.put('/projects/unfeature/:id', protect, admin, unfeatureProject);
 
