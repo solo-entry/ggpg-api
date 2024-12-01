@@ -196,10 +196,6 @@ const updateProject = async (req, res) => {
     const project = await Project.findById(req.params.id);
 
     if (project) {
-      if (project.author.toString() !== req.user._id.toString()) {
-        return res.status(401).json({message: 'Not authorized to update this project'});
-      }
-
       project.title = title || project.title;
       project.description = description || project.description;
       project.media = media || project.media;
@@ -223,12 +219,6 @@ const deleteProject = async (req, res) => {
     const project = await Project.findById(req.params.id);
 
     if (project) {
-      if (
-        project.author.toString() !== req.user._id.toString() &&
-        req.user.role !== 'admin'
-      ) {
-        return res.status(401).json({message: 'Not authorized to delete this project'});
-      }
 
       await project.deleteOne();
       res.json({message: 'Project removed'});

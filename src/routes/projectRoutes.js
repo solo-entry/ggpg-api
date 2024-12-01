@@ -8,6 +8,7 @@ const {
   deleteProject, generateTags, getFeaturedProjects, getAuthors,
 } = require('../controllers/projectController');
 const { protect } = require('../middleware/authMiddleware');
+const {admin} = require("../middleware/adminMiddleware");
 
 // Public Routes
 router.get('/featured', getFeaturedProjects);
@@ -16,9 +17,9 @@ router.get('/', getProjects);
 router.get('/:id', getProjectById);
 
 // Protected Routes
-router.post('/', protect, createProject);
-router.post('/tags', protect, generateTags);
-router.put('/:id', protect, updateProject);
-router.delete('/:id', protect, deleteProject);
+router.post('/', protect, admin, createProject);
+router.post('/tags', protect, admin, generateTags);
+router.put('/:id', protect, admin, updateProject);
+router.delete('/:id', protect, admin, deleteProject);
 
 module.exports = router;
