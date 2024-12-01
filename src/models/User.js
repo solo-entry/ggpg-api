@@ -18,13 +18,13 @@ const UserSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['student', 'professional', 'admin'],
-    default: 'student',
+    enum: ['user', 'admin'],
+    default: 'user',
   },
   profile: {
-    bio: { type: String, default: '' },
-    skills: { type: [String], default: [] },
-    socialLinks: { type: Map, of: String },
+    bio: {type: String, default: ''},
+    skills: {type: [String], default: []},
+    socialLinks: {type: Map, of: String},
   },
   createdAt: {
     type: Date,

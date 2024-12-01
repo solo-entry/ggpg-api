@@ -3,27 +3,29 @@ const User = require('../models/User');
 
 // Generate JWT
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+  return jwt.sign({id}, process.env.JWT_SECRET, {expiresIn: '30d'});
 };
 
 const registerUser = async (req, res) => {
-  const { fullName, email, password, role } = req.body;
+  const {fullName, email, password} = req.body;
 
   if (!fullName || !email || !password) {
-    return res.status(400).json({ message: 'Please enter all fields' });
+    return res.status(400).json({message: 'Please enter all fields'});
   }
 
-  const userExists = await User.findOne({ email });
+  const userExists = await User.findOne({email});
 
   if (userExists) {
-    return res.status(400).json({ message: 'Email already in use' });
+    return res.status(400).json({message: 'Email already in use'});
   }
+
+  const totalUsers = await User.countDocuments({});
 
   const user = await User.create({
     fullName,
     email,
     passwordHash: password,
-    role: role || 'student',
+    role: totalUsers === 0 ? 'admin' : 'user',
   });
 
   if (user) {
@@ -35,7 +37,7 @@ const registerUser = async (req, res) => {
       token: generateToken(user._id),
     });
   } else {
-    res.status(400).json({ message: 'Invalid user data' });
+    res.status(400).json({message: 'Invalid user data'});
   }
 };
 
@@ -43,9 +45,9 @@ const registerUser = async (req, res) => {
 // @route   POST /auth/login
 // @access  Public
 const authUser = async (req, res) => {
-  const { email, password } = req.body;
+  const {email, password} = req.body;
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({email});
 
   if (user && (await user.matchPassword(password))) {
     res.json({
@@ -56,7 +58,7 @@ const authUser = async (req, res) => {
       token: generateToken(user._id),
     });
   } else {
-    res.status(401).json({ message: 'Invalid credentials' });
+    res.status(401).json({message: 'Invalid credentials'});
   }
 };
 
@@ -69,7 +71,7 @@ const getUserProfile = async (req, res) => {
   if (user) {
     res.json(user);
   } else {
-    res.status(404).json({ message: 'User not found' });
+    res.status(404).json({message: 'User not found'});
   }
 };
 
@@ -77,16 +79,16 @@ const getUserProfile = async (req, res) => {
 // @route   GET /auth/change-password
 // @access  Private
 const changePassword = async (req, res) => {
-  const { currentPassword, newPassword } = req.body;
+  const {currentPassword, newPassword} = req.body;
 
   // Validate input
   if (!currentPassword || !newPassword) {
-    return res.status(400).json({ message: 'Please provide both current and new passwords' });
+    return res.status(400).json({message: 'Please provide both current and new passwords'});
   }
 
   // Optional: Add password strength validation
   if (newPassword.length > 6) {
-    return res.status(400).json({ message: 'New password must be at least 6 characters long' });
+    return res.status(400).json({message: 'New password must be at least 6 characters long'});
   }
 
   try {
@@ -94,14 +96,14 @@ const changePassword = async (req, res) => {
     const user = await User.findById(req.user._id);
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({message: 'User not found'});
     }
 
     // Check if currentPassword matches the stored password
     const isMatch = await user.matchPassword(currentPassword);
 
     if (!isMatch) {
-      return res.status(401).json({ message: 'Current password is incorrect' });
+      return res.status(401).json({message: 'Current password is incorrect'});
     }
 
     // Update the passwordHash with the new password
@@ -111,7 +113,7 @@ const changePassword = async (req, res) => {
     await user.save();
 
     // Optionally, generate a new token
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+    const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: '30d'});
 
     res.json({
       message: 'Password updated successfully',
@@ -119,7 +121,7 @@ const changePassword = async (req, res) => {
     });
   } catch (error) {
     console.error('Error changing password:', error.message);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({message: 'Server error'});
   }
 };
 
@@ -150,7 +152,7 @@ const updateUserProfile = async (req, res) => {
       token: generateToken(updatedUser._id),
     });
   } else {
-    res.status(404).json({ message: 'User not found' });
+    res.status(404).json({message: 'User not found'});
   }
 };
 

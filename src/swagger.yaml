@@ -3,7 +3,7 @@ info:
   title: Academic Connect API
   version: 1.0.0
   description: >
-    Academic Connect is a platform where students can showcase their graduation projects, interact with peers, and connect with industry professionals. This API allows for user authentication, project management, commenting, liking, bookmarking, messaging, and admin functionalities.
+    Academic Connect is a platform where users can showcase their graduation projects, interact with peers, and connect with industry professionals. This API allows for user authentication, project management, commenting, liking, bookmarking, messaging, and admin functionalities.
 
 servers:
   - url: http://localhost:5000/api
@@ -32,19 +32,19 @@ components:
           example: "john@example.com"
         role:
           type: string
-          enum: [student, professional, admin]
-          example: "student"
+          enum: [ user, admin ]
+          example: "user"
         profile:
           type: object
           properties:
             bio:
               type: string
-              example: "Computer Science student with a passion for AI."
+              example: "Computer Science user with a passion for AI."
             skills:
               type: array
               items:
                 type: string
-              example: ["JavaScript", "React", "Node.js"]
+              example: [ "JavaScript", "React", "Node.js" ]
             socialLinks:
               type: object
               additionalProperties:
@@ -86,8 +86,8 @@ components:
           example: "password123"
         role:
           type: string
-          enum: [student, professional]
-          example: "student"
+          enum: [ user ]
+          example: "user"
 
     UserProfileUpdate:
       type: object
@@ -108,7 +108,7 @@ components:
           type: array
           items:
             type: string
-          example: ["Python", "Django"]
+          example: [ "Python", "Django" ]
         socialLinks:
           type: object
           additionalProperties:
@@ -137,7 +137,7 @@ components:
           type: array
           items:
             type: string
-          example: ["AI", "Chatbot", "Machine Learning"]
+          example: [ "AI", "Chatbot", "Machine Learning" ]
         author:
           $ref: '#/components/schemas/User'
         likes:
@@ -161,7 +161,7 @@ components:
           example: false
         visibility:
           type: string
-          enum: [public, private]
+          enum: [ public, private ]
           example: "public"
         viewCount:
           type: integer
@@ -211,7 +211,7 @@ components:
           example: "60d0fe4f5311236168a109cc"
         visibility:
           type: string
-          enum: [public, private]
+          enum: [ public, private ]
           example: "private"
 
     # Comment Schemas
@@ -470,7 +470,7 @@ paths:
       summary: Get user profile
       description: Retrieve the authenticated user's profile.
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       responses:
         '200':
           description: User profile retrieved successfully
@@ -486,7 +486,7 @@ paths:
       summary: Update user profile
       description: Update the authenticated user's profile information.
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       requestBody:
         required: true
         content:
@@ -545,7 +545,7 @@ paths:
           name: sortBy
           schema:
             type: string
-            enum: [date, likes, popularity]
+            enum: [ date, likes, popularity ]
           description: Sort projects by date, likes, or popularity.
       responses:
         '200':
@@ -565,7 +565,7 @@ paths:
       summary: Create a new project
       description: Create a new project. Authentication required.
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       requestBody:
         required: true
         content:
@@ -615,7 +615,7 @@ paths:
       summary: Update a project
       description: Update an existing project. Authentication required.
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       parameters:
         - in: path
           name: id
@@ -649,7 +649,7 @@ paths:
       summary: Delete a project
       description: Delete a specific project by ID. Authentication required.
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       parameters:
         - in: path
           name: id
@@ -707,7 +707,7 @@ paths:
       summary: Add a comment to a project
       description: Add a new comment to a specific project. Authentication required.
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       parameters:
         - in: path
           name: projectId
@@ -742,7 +742,7 @@ paths:
       summary: Edit a comment
       description: Update an existing comment. Authentication required.
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       parameters:
         - in: path
           name: id
@@ -776,7 +776,7 @@ paths:
       summary: Delete a comment
       description: Delete a specific comment by ID. Authentication required.
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       parameters:
         - in: path
           name: id
@@ -838,7 +838,7 @@ paths:
       summary: Like a project
       description: Like a specific project. Authentication required.
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       parameters:
         - in: path
           name: projectId
@@ -878,7 +878,7 @@ paths:
       summary: Unlike a project
       description: Remove a like from a specific project. Authentication required.
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       parameters:
         - in: path
           name: projectId
@@ -920,7 +920,7 @@ paths:
       summary: Get all bookmarks of a user
       description: Retrieve all bookmarked projects for the authenticated user.
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       responses:
         '200':
           description: A list of bookmarks
@@ -942,7 +942,7 @@ paths:
       summary: Bookmark a project
       description: Bookmark a specific project. Authentication required.
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       parameters:
         - in: path
           name: projectId
@@ -982,7 +982,7 @@ paths:
       summary: Remove bookmark from a project
       description: Remove a bookmark from a specific project. Authentication required.
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       parameters:
         - in: path
           name: projectId
@@ -1024,7 +1024,7 @@ paths:
       summary: Send a message to another user
       description: Send a message to a specific user. Authentication required.
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       parameters:
         - in: path
           name: receiverId
@@ -1059,7 +1059,7 @@ paths:
       summary: Get all messages between users
       description: Retrieve all messages exchanged between the authenticated user and another user.
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       parameters:
         - in: path
           name: userId
@@ -1086,7 +1086,7 @@ paths:
       summary: Mark a message as read
       description: Mark a specific message as read. Authentication required.
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       parameters:
         - in: path
           name: messageId
@@ -1120,7 +1120,7 @@ paths:
       summary: Delete a comment
       description: Admin can delete any comment by ID. Authentication and admin role required.
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       parameters:
         - in: path
           name: id
@@ -1163,7 +1163,7 @@ paths:
       summary: Feature a project
       description: Admin can feature a project by ID. Authentication and admin role required.
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       parameters:
         - in: path
           name: id
@@ -1206,7 +1206,7 @@ paths:
       summary: Unfeature a project
       description: Admin can unfeature a project by ID. Authentication and admin role required.
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       parameters:
         - in: path
           name: id
@@ -1249,7 +1249,7 @@ paths:
       summary: Add a new category
       description: Admin can add a new project category. Authentication and admin role required.
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       requestBody:
         required: true
         content:
@@ -1287,7 +1287,7 @@ paths:
       summary: Edit a category
       description: Admin can edit an existing category by ID. Authentication and admin role required.
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       parameters:
         - in: path
           name: id
@@ -1331,7 +1331,7 @@ paths:
       summary: Delete a category
       description: Admin can delete a category by ID. Authentication and admin role required.
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       parameters:
         - in: path
           name: id
@@ -1374,7 +1374,7 @@ paths:
       summary: Get all users
       description: Admin can retrieve a list of all users. Authentication and admin role required.
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       responses:
         '200':
           description: A list of users
@@ -1406,7 +1406,7 @@ paths:
       summary: Delete a user
       description: Admin can delete a user by ID. Authentication and admin role required.
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       parameters:
         - in: path
           name: id
@@ -1449,7 +1449,7 @@ paths:
       summary: Get all reports
       description: Retrieve all user-generated reports. (Not implemented)
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       responses:
         '501':
           description: Not implemented
@@ -1483,7 +1483,7 @@ paths:
       summary: Add a new category
       description: Admin can add a new project category. Authentication and admin role required.
       security:
-        - bearerAuth: []
+        - bearerAuth: [ ]
       requestBody:
         required: true
         content:
