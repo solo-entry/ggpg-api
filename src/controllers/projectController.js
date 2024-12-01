@@ -1,28 +1,53 @@
 const Project = require('../models/Project');
 const {generateTagsWithAI} = require('../utils/openai');
+const OpenAI = require("openai");
+
+const generateTags = async (req, res) => {
+  const {title, description} = req.body;
+
+  const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+
+  const newThread = await openai.beta.threads.create({});
+  const threadId = newThread.id;
+  await openai.beta.threads.messages.create(threadId, {
+    content: `Title: ${title}\n\nDescription: ${description}`,
+    role: 'user',
+  });
+  await openai.beta.threads.runs.createAndPoll(threadId, {
+    assistant_id: process.env.OPENAI_ASSISTANT_ID,
+  });
+  const response = await openai.beta.threads.messages.list(threadId, {
+    limit: 1,
+  });
+  if (!response?.data?.[0]?.content) throw new Error('INVALID_DATA');
+  const messages = response?.data?.[0]?.content || [];
+  if (messages?.[0]?.type !== 'text') throw new Error('BAD_RESPONSE');
+  const json = JSON.parse(messages[0].text.value);
+  res.json({
+    data: json?.items ?? [],
+  })
+
+}
 
 const createProject = async (req, res) => {
-  const {title, description, media, category} = req.body;
+  const {title, description, media, category, tags} = req.body;
 
-  if (!title || !description) {
-    return res.status(400).json({message: 'Title and description are required'});
-  }
-
-  // Generate tags using AI
-  const tags = await generateTagsWithAI(description);
+  if (!title || !description || !tags) return res.status(400).json({message: 'Title and description are required'});
 
   const project = new Project({
     title,
     description,
     media: media || [],
-    tags,
+    tags: tags.split(',').map(x => x.trim()),
     author: req.user._id,
     category: category || null,
   });
 
   const createdProject = await project.save();
   res.status(201).json(createdProject);
-};
+}
 
 const getProjects = async (req, res) => {
   try {
@@ -59,6 +84,7 @@ const getProjects = async (req, res) => {
       .populate('category', 'name')
       .sort(sort)
       .exec();
+    console.log(projects);
 
     res.json(projects);
   } catch (error) {
@@ -151,4 +177,5 @@ module.exports = {
   getProjectById,
   updateProject,
   deleteProject,
+  generateTags,
 };

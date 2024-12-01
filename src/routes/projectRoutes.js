@@ -5,7 +5,7 @@ const {
   getProjects,
   getProjectById,
   updateProject,
-  deleteProject,
+  deleteProject, generateTags,
 } = require('../controllers/projectController');
 const { protect } = require('../middleware/authMiddleware');
 
@@ -15,6 +15,7 @@ router.get('/:id', getProjectById);
 
 // Protected Routes
 router.post('/', protect, createProject);
+router.post('/tags', protect, generateTags);
 router.put('/:id', protect, updateProject);
 router.delete('/:id', protect, deleteProject);
 
