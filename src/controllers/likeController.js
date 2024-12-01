@@ -10,13 +10,13 @@ const likeProject = async (req, res) => {
     const project = await Project.findById(req.params.projectId);
 
     if (!project) {
-      return res.status(404).json({ message: 'Project not found' });
+      return res.status(404).json({message: 'Project not found'});
     }
 
     const alreadyLiked = project.likes.includes(req.user._id);
 
     if (alreadyLiked) {
-      return res.status(400).json({ message: 'Project already liked' });
+      return res.status(400).json({message: 'Project already liked'});
     }
 
     project.likes.push(req.user._id);
@@ -27,9 +27,9 @@ const likeProject = async (req, res) => {
       project: project._id,
     });
 
-    res.status(201).json({ message: 'Project liked' });
+    res.status(201).json({message: 'Project liked'});
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({message: 'Server error'});
   }
 };
 
@@ -41,13 +41,13 @@ const unlikeProject = async (req, res) => {
     const project = await Project.findById(req.params.projectId);
 
     if (!project) {
-      return res.status(404).json({ message: 'Project not found' });
+      return res.status(404).json({message: 'Project not found'});
     }
 
     const likeIndex = project.likes.indexOf(req.user._id);
 
     if (likeIndex === -1) {
-      return res.status(400).json({ message: 'Project not liked yet' });
+      return res.status(400).json({message: 'Project not liked yet'});
     }
 
     project.likes.splice(likeIndex, 1);
@@ -58,9 +58,9 @@ const unlikeProject = async (req, res) => {
       project: project._id,
     });
 
-    res.json({ message: 'Project unliked' });
+    res.json({message: 'Project unliked'});
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({message: 'Server error'});
   }
 };
 
@@ -72,12 +72,16 @@ const getLikeCount = async (req, res) => {
     const project = await Project.findById(req.params.projectId);
 
     if (!project) {
-      return res.status(404).json({ message: 'Project not found' });
+      return res.status(404).json({message: 'Project not found'});
     }
+    const userHasLiked = project.likes.includes(req.user._id);
 
-    res.json({ likeCount: project.likes.length });
+    res.json({
+      likeCount: project.likes.length,
+      liked: userHasLiked
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({message: 'Server error'});
   }
 };
 
