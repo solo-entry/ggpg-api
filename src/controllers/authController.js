@@ -40,7 +40,7 @@ const registerUser = async (req, res) => {
 };
 
 // @desc    Authenticate user & get token
-// @route   POST /api/auth/login
+// @route   POST /auth/login
 // @access  Public
 const authUser = async (req, res) => {
   const { email, password } = req.body;
@@ -61,7 +61,7 @@ const authUser = async (req, res) => {
 };
 
 // @desc    Get user profile
-// @route   GET /api/auth/profile
+// @route   GET /auth/profile
 // @access  Private
 const getUserProfile = async (req, res) => {
   const user = await User.findById(req.user._id).select('-passwordHash');
@@ -73,8 +73,58 @@ const getUserProfile = async (req, res) => {
   }
 };
 
+// @desc    Change password
+// @route   GET /auth/change-password
+// @access  Private
+const changePassword = async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+
+  // Validate input
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ message: 'Please provide both current and new passwords' });
+  }
+
+  // Optional: Add password strength validation
+  if (newPassword.length > 6) {
+    return res.status(400).json({ message: 'New password must be at least 6 characters long' });
+  }
+
+  try {
+    // Find the user by ID (set by protect middleware)
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Check if currentPassword matches the stored password
+    const isMatch = await user.matchPassword(currentPassword);
+
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Current password is incorrect' });
+    }
+
+    // Update the passwordHash with the new password
+    user.passwordHash = newPassword;
+
+    // Save the updated user (pre-save middleware will hash the password)
+    await user.save();
+
+    // Optionally, generate a new token
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+
+    res.json({
+      message: 'Password updated successfully',
+      token, // Optionally send a new token
+    });
+  } catch (error) {
+    console.error('Error changing password:', error.message);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 // @desc    Update user profile
-// @route   PUT /api/auth/profile
+// @route   PUT /auth/profile
 // @access  Private
 const updateUserProfile = async (req, res) => {
   const user = await User.findById(req.user._id);
@@ -109,4 +159,5 @@ module.exports = {
   authUser,
   getUserProfile,
   updateUserProfile,
+  changePassword,
 };

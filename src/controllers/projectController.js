@@ -104,7 +104,6 @@ const getFeaturedProjects = async (req, res) => {
   const projects = await Project.find({
     isFeatured: true,
   }).limit(5).exec();
-  console.log('projects', projects);
   res.json(projects);
 }
 
