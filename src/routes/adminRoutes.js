@@ -35,4 +35,6 @@ router.delete('/users/:id', protect, admin, deleteUser);
 // Reports (Not implemented)
 router.get('/reports', protect, admin, getAllReports);
 
+// Generate Tags using AI
+
 module.exports = router;
