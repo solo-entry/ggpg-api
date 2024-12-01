@@ -5,9 +5,9 @@ const Comment = require('../models/Comment');
 const Category = require('../models/Category');
 
 const getDashboard = async (req, res) => {
-  const totalUsers = await User.count({}).exec();
-  const totalProjects = await Project.count({}).exec();
-  const totalComments = await Comment.count({}).exec();
+  const totalUsers = await User.countDocuments({}).exec();
+  const totalProjects = await Project.countDocuments({}).exec();
+  const totalComments = await Comment.countDocuments({}).exec();
   const latestProjects = await Project.find({}).populate('author', 'fullName email').sort('-createdAt').limit(10).exec();
   const latestComments = await Comment.find({}).populate('author', 'fullName email').sort('-createdAt').limit(5).exec();
   const mostVotedProjects = await Project.find({}).populate('author', 'fullName email').sort({likes: -1}).limit(10).exec();
