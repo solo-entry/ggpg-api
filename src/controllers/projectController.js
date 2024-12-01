@@ -32,7 +32,7 @@ const generateTags = async (req, res) => {
 }
 
 const createProject = async (req, res) => {
-  const {title, description, media, category, tags} = req.body;
+  const {title, description, media, category, tags, author} = req.body;
 
   if (!title || !description || !tags) return res.status(400).json({message: 'Title and description are required'});
 
@@ -41,7 +41,7 @@ const createProject = async (req, res) => {
     description,
     media: media || [],
     tags: tags.split(',').map(x => x.trim()),
-    author: req.user._id,
+    author: author,
     category: category || null,
   });
 
