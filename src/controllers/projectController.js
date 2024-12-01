@@ -190,7 +190,7 @@ const getProjectById = async (req, res) => {
 };
 
 const updateProject = async (req, res) => {
-  const {title, description, media, category, visibility, tags} = req.body;
+  const {title, description, media, category, visibility, tags, author} = req.body;
 
   try {
     const project = await Project.findById(req.params.id);
@@ -206,6 +206,7 @@ const updateProject = async (req, res) => {
       project.category = category || project.category;
       project.visibility = visibility || project.visibility;
       project.tags = tags?.split(',').map(x => x.trim()) || project.tags;
+      project.author = author || project.author;
 
       const updatedProject = await project.save();
       res.json(updatedProject);
